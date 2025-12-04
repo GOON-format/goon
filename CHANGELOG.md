@@ -59,9 +59,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 | Events | 28.5% savings | **11.7% savings** |
 | Config | 33.8% savings | **10.8% savings** |
 
-**Average: 37.9% savings vs JSON, 3.8% edging TOON**
+**Average: 37.9% savings vs JSON, 3.1% edging TOON**
 
-**LLM Accuracy: 92.5%** (GOON) vs 86.8% (TOON) vs 80.8% (JSON)
+**LLM Accuracy: 92.5%** (GOON) vs 90.1% (TOON) vs 89.2% (JSON)
+
+**Efficiency Score: 7.9% better than TOON** (accuracy per token)
 
 ## [1.0.0] - 2024-12-04
 

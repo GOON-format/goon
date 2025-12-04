@@ -40,12 +40,12 @@ Tested with GPT-4o tokenizer (o200k_base) on 6 real-world datasets:
 
 | Dataset | JSON | TOON | GOON | GOON vs JSON | Edging TOON |
 |---------|------|------|------|--------------|-------------|
-| Employees | 6,239 | 2,397 | 2,324 | **62.8%** | **3.0%** 💦 |
-| Orders | 9,948 | 6,415 | 5,847 | **41.2%** | **8.9%** 💦 |
-| Analytics | 4,432 | 1,806 | 1,744 | **60.6%** | **3.4%** 💦 |
-| GitHub | 14,916 | 12,278 | 9,126 | **38.8%** | **25.7%** 🍆 |
-| Events | 6,748 | 5,459 | 4,823 | **28.5%** | **11.7%** 💦 |
-| Config | 776 | 576 | 514 | **33.8%** | **10.8%** 💦 |
+| Employees | 6,239 | 2,397 | 2,197 | **64.8%** | **8.3%** 💦 |
+| Orders | 9,948 | 6,415 | 6,325 | **36.4%** | **1.4%** 💦 |
+| Analytics | 4,432 | 1,806 | 1,686 | **62.0%** | **6.6%** 💦 |
+| GitHub | 14,916 | 12,278 | 12,146 | **18.6%** | **1.1%** 💦 |
+| Events | 6,748 | 5,459 | 5,449 | **19.2%** | **0.2%** 💦 |
+| Config | 776 | 576 | 572 | **26.3%** | **0.7%** 💦 |
 
 **The Release:**
 - **GOON vs JSON**: 37.9% savings (absolutely demolished)
@@ -58,13 +58,13 @@ We're not just efficient – we're *accurate*. GPT-4o-mini understands our forma
 
 | Format | Accuracy | Avg Tokens | Efficiency Score |
 |--------|----------|------------|------------------|
-| JSON | 80.8% | 7,177 | 11.3 |
-| TOON | 86.8% | 4,822 | 18.0 |
-| **GOON** | **92.5%** | **4,149** | **22.3** 🦍 |
+| JSON | 89.2% | 7,177 | 12.4 |
+| TOON | 90.1% | 4,822 | 18.7 |
+| **GOON** | **92.5%** | **4,729** | **19.6** 🦍 |
 
 **Peak Performance:**
 - **92.5% accuracy** – LLMs love our format
-- **24% more efficient** than TOON (accuracy per token)
+- **7.9% more efficient** than TOON (accuracy per token)
 - The best of both worlds: compact AND comprehensible
 
 *Run `npm run benchmark:tokens` and `npm run benchmark:accuracy` to see for yourself.*
@@ -224,14 +224,14 @@ decode(goonString, {
 
 | Aspect | TOON | GOON | Edge |
 |--------|------|------|------|
-| Token savings vs JSON | 36.5% | **37.9%** | +3.8% |
-| LLM Accuracy | 86.8% | **92.5%** | +6.5% |
-| Efficiency Score | 18.0 | **22.3** | +24% |
+| Token savings vs JSON | 36.5% | **37.9%** | +3.1% |
+| LLM Accuracy | 90.1% | **92.5%** | +2.4% |
+| Efficiency Score | 18.7 | **19.6** | +7.9% |
 | Boolean tokens | `true`/`false` | `T`/`F` | Tighter |
 | Default mode | None | `llm` | Smarter |
 | Vibes | Respectable | **Unhinged** | 🦍 |
 
-We're not just beating TOON – we're **edging** it. 3.8% might not sound like much, but when you're processing millions of tokens, that's serious savings. We've been gooning on this optimization for weeks.
+We're not just beating TOON – we're **edging** it. 7.9% more efficient might not sound like much, but when you're processing millions of tokens, that's serious savings. We've been gooning on this optimization for weeks.
 
 ---
 
