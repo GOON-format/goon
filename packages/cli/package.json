@@ -1,6 +1,6 @@
 {
   "name": "@goon-format/cli",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "CLI for GOON (Greatly Optimized Object Notation) - Convert JSON to ultra-compact GOON format",
   "type": "module",
   "bin": {
@@ -43,7 +43,7 @@
     "node": ">=18"
   },
   "dependencies": {
-    "@goon-format/goon": "^1.0.2",
+    "@goon-format/goon": "^1.0.3",
     "gpt-tokenizer": "^2.8.1"
   },
   "optionalDependencies": {
