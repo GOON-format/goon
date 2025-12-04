@@ -1,0 +1,33 @@
+{
+  "name": "goon-monorepo",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces",
+    "test": "vitest run",
+    "bench": "tsx benchmarks/run.ts",
+    "benchmark:tokens": "tsx benchmarks/src/run-tokens.ts",
+    "benchmark:features": "tsx benchmarks/src/feature-analysis.ts",
+    "benchmark:accuracy": "tsx benchmarks/src/run-accuracy.ts",
+    "benchmark:all": "npm run benchmark:tokens && npm run benchmark:features"
+  },
+  "devDependencies": {
+    "@toon-format/toon": "^1.0.0",
+    "@types/js-yaml": "^4.0.9",
+    "@types/node": "^22.10.1",
+    "@types/papaparse": "^5.3.15",
+    "dotenv": "^16.4.7",
+    "fast-xml-parser": "^4.5.1",
+    "gpt-tokenizer": "^2.8.1",
+    "js-yaml": "^4.1.0",
+    "openai": "^4.76.0",
+    "papaparse": "^5.4.1",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8"
+  }
+}
+

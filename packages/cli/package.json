@@ -1,0 +1,52 @@
+{
+  "name": "@goon-format/cli",
+  "version": "1.0.0",
+  "description": "CLI for GOON (Greatly Optimized Object Notation) - Convert JSON to ultra-compact GOON format",
+  "type": "module",
+  "bin": {
+    "goon": "./dist/cli.js"
+  },
+  "main": "./dist/cli.js",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "start": "tsx src/cli.ts",
+    "test": "echo 'No tests yet'",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "goon",
+    "cli",
+    "json",
+    "converter",
+    "llm",
+    "tokenization",
+    "token-efficient"
+  ],
+  "author": "GOON Format Contributors",
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/goon-format/goon.git",
+    "directory": "packages/cli"
+  },
+  "homepage": "https://github.com/goon-format/goon#readme",
+  "bugs": {
+    "url": "https://github.com/goon-format/goon/issues"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "@goon-format/goon": "^1.0.0",
+    "gpt-tokenizer": "^2.8.1"
+  },
+  "optionalDependencies": {
+    "@toon-format/toon": "^1.0.0"
+  }
+}

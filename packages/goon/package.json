@@ -1,0 +1,55 @@
+{
+  "name": "@goon-format/goon",
+  "version": "1.0.0",
+  "description": "Greatly Optimized Object Notation - Hyper-compact LLM-friendly data format",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "test": "cd ../.. && vitest run packages/goon/src",
+    "test:watch": "vitest --config ../../vitest.config.ts",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "goon",
+    "serialization",
+    "tokenization",
+    "data-format",
+    "llm",
+    "json",
+    "toon",
+    "token-efficient",
+    "compression"
+  ],
+  "author": "GOON Format Contributors",
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/goon-format/goon.git",
+    "directory": "packages/goon"
+  },
+  "homepage": "https://github.com/goon-format/goon#readme",
+  "bugs": {
+    "url": "https://github.com/goon-format/goon/issues"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
+

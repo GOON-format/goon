@@ -1,0 +1,9 @@
+blank_issues_enabled: false
+contact_links:
+  - name: GitHub Discussions
+    url: https://github.com/goon-format/goon/discussions
+    about: Ask questions and share ideas
+  - name: Documentation
+    url: https://github.com/goon-format/goon#readme
+    about: Read the documentation
+

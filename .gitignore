@@ -1,0 +1,43 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+*.tsbuildinfo
+*.d.ts
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# Test coverage
+coverage/
+
+# Environment
+.env
+.env.local
+
+# Benchmarks
+benchmarks/fixtures/*.json
+benchmarks/results/accuracy.json
+
+# Development artifacts
+specs/
+.specify/
+.cursor/commands/
+test-*.ts
+debug-*.ts
+check-*.ts
+compare.ts
+verify*.ts
+token-test.ts
