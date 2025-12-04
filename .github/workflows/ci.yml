@@ -33,8 +33,9 @@ jobs:
       - name: Run tests
         run: npm test
       
-      - name: Run benchmarks (dry-run)
+      - name: Run token benchmark
         run: npm run benchmark:tokens
+        continue-on-error: true  # GitHub API rate limits may cause failures
         env:
           CI: true
 
