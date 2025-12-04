@@ -6,7 +6,7 @@
     "packages/*"
   ],
   "scripts": {
-    "build": "npm run build --workspaces",
+    "build": "npm run build -w @goon-format/goon && npm run build -w @goon-format/cli",
     "test": "vitest run",
     "bench": "tsx benchmarks/run.ts",
     "benchmark:tokens": "tsx benchmarks/src/run-tokens.ts",
