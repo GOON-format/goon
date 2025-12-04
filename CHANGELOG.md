@@ -5,38 +5,53 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.1.0] - 2024-12-04
+## [1.0.2] - 2024-12-04
+
+### Fixed
+
+- **Decoder improvements**:
+  - Fixed parsing of `key: value` format (with space after colon)
+  - Fixed parsing of nested objects with trailing colons (`key:`)
+  - Fixed parsing of tabular arrays with array length syntax (`key[N]{fields}:`)
+  - Fixed minimal indent support (rows at same level as header)
+- **Test suite improvements**:
+  - Updated tests to match current LLM-optimized format
+  - Fixed dictionary test threshold requirements
+  - All 42 tests now pass
+
+## [1.0.1] - 2024-12-04
 
 ### Added
 
+- README files for npm packages (`@goon-format/goon`, `@goon-format/cli`)
 - **Mode presets** for common use cases:
-  - `llm`: Optimized for LLM accuracy (92.5% with GPT-4o-mini)
+  - `llm`: Optimized for LLM accuracy (92.5% with GPT-4o-mini) - **DEFAULT**
   - `compact`: Maximum token compression
-  - `balanced`: Default trade-off
+  - `balanced`: Trade-off between efficiency and readability
 - **Minimal indent mode** (`minimalIndent: true`): 12% additional token savings
 - **Comma delimiter default**: 14% more token-efficient than pipe
 - **Auto-detect delimiter** on decode: Supports comma, pipe, and tab
 
 ### Changed
 
-- **Default mode is now `llm`** for best accuracy out of the box
-- Default delimiter changed from pipe (`|`) to comma (`,`) for better token efficiency
+- Default mode is now `llm` for best accuracy out of the box
+- Default delimiter changed from pipe (`|`) to comma (`,`)
 - LLM mode disables dictionary and column references for improved accuracy
-- Updated all documentation to reflect new mode presets
-- Improved benchmark accuracy to 92.5% (up from 86.8%)
+- Updated all documentation with "edging" terminology and gooning references
+
+### Fixed
+
+- CI workflow build order (build goon before cli)
+- TypeScript type errors in CLI error handling
 
 ### Removed
 
-- Removed experimental features that didn't improve accuracy:
-  - `dictionaryAtEnd` option
-  - `dictionaryAnchors` option
-  - `semanticRefs` option
-  - `selfDescribing` option
+- Experimental features that didn't improve accuracy
 
-### Benchmark Results (v1.1.0)
+### Benchmark Results
 
-| Dataset | GOON vs JSON | GOON vs TOON |
-|---------|--------------|--------------|
+| Dataset | GOON vs JSON | Edging TOON 🍆 |
+|---------|--------------|----------------|
 | Employees | 62.8% savings | **3.0% savings** |
 | Orders | 41.2% savings | **8.9% savings** |
 | Analytics | 60.6% savings | **3.4% savings** |
@@ -44,7 +59,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 | Events | 28.5% savings | **11.7% savings** |
 | Config | 33.8% savings | **10.8% savings** |
 
-**Average: 37.9% savings vs JSON, 3.1% savings vs TOON**
+**Average: 37.9% savings vs JSON, 3.8% edging TOON**
 
 **LLM Accuracy: 92.5%** (GOON) vs 86.8% (TOON) vs 80.8% (JSON)
 
@@ -83,15 +98,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 #### Benchmarks
 - Token efficiency benchmarks using GPT-4o tokenizer (o200k_base)
-- 6 benchmark datasets:
-  - Employees (100 uniform records)
-  - Orders (50 nested records)
-  - Analytics (60 days time-series)
-  - GitHub (100 real repositories)
-  - Events (75 log entries)
-  - Config (deeply nested)
+- 6 benchmark datasets
 - Format comparison: JSON, JSON Compact, YAML, XML, CSV, TOON, GOON
-- Feature impact analysis (dictionary, column refs, literals)
+- Feature impact analysis
 - LLM accuracy benchmarks
 
 #### Documentation
@@ -99,12 +108,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - SPEC.md with complete ABNF grammar
 - Migration guide from TOON
 - LLM integration guide
-- Example code (encode, decode, OpenAI)
+- Example code
 
 #### Community
-- CODE_OF_CONDUCT.md (Contributor Covenant v2.1)
-- CONTRIBUTING.md with development guide
-- SECURITY.md with vulnerability reporting
+- CODE_OF_CONDUCT.md
+- CONTRIBUTING.md
+- SECURITY.md
 - GitHub issue templates
 - GitHub Actions CI/CD workflows
 
@@ -117,6 +126,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-[1.1.0]: https://github.com/goon-format/goon/releases/tag/v1.1.0
+[1.0.2]: https://github.com/goon-format/goon/releases/tag/v1.0.2
+[1.0.1]: https://github.com/goon-format/goon/releases/tag/v1.0.1
 [1.0.0]: https://github.com/goon-format/goon/releases/tag/v1.0.0
-[Unreleased]: https://github.com/goon-format/goon/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/goon-format/goon/compare/v1.0.2...HEAD

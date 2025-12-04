@@ -11,48 +11,63 @@ describe('GOON Encode/Decode', () => {
   describe('primitives', () => {
     it('encodes booleans as T/F', () => {
       const goon = encode({ active: true, deleted: false });
-      expect(goon).toContain('active:T');
-      expect(goon).toContain('deleted:F');
+      expect(goon).toContain('active: T');
+      expect(goon).toContain('deleted: F');
     });
 
     it('encodes null as _', () => {
       const goon = encode({ value: null });
-      expect(goon).toContain('value:_');
+      expect(goon).toContain('value: _');
     });
 
     it('encodes empty string as ~', () => {
       const goon = encode({ name: '' });
-      expect(goon).toContain('name:~');
+      expect(goon).toContain('name: ~');
     });
 
     it('encodes numbers', () => {
       const goon = encode({ count: 42, price: 19.99 });
-      expect(goon).toContain('count:42');
-      expect(goon).toContain('price:19.99');
+      expect(goon).toContain('count: 42');
+      expect(goon).toContain('price: 19.99');
     });
 
     it('handles Infinity and NaN as null', () => {
       const goon = encode({ inf: Infinity, nan: NaN });
-      expect(goon).toContain('inf:_');
-      expect(goon).toContain('nan:_');
+      expect(goon).toContain('inf: _');
+      expect(goon).toContain('nan: _');
     });
   });
 
   describe('string dictionary', () => {
-    it('creates dictionary for repeated strings', () => {
+    it('creates dictionary for repeated strings in compact mode', () => {
+      // Need enough repetition to trigger dictionary (threshold based on token savings)
       const data = {
         users: [
-          { id: 1, role: 'admin' },
-          { id: 2, role: 'user' },
-          { id: 3, role: 'admin' },
+          { id: 1, dept: 'Engineering', role: 'Engineering' },
+          { id: 2, dept: 'Engineering', role: 'Engineering' },
+          { id: 3, dept: 'Engineering', role: 'Sales' },
+          { id: 4, dept: 'Sales', role: 'Sales' },
         ],
       };
-      const goon = encode(data);
-      expect(goon).toMatch(/^\$:admin/); // Dictionary starts with admin
+      // Need to use compact or balanced mode to enable dictionary
+      const goon = encode(data, { mode: 'compact' });
+      expect(goon).toMatch(/^\$:/); // Dictionary starts
       expect(goon).toContain('$0'); // Reference to dictionary
     });
 
-    it('does not create dictionary when disabled', () => {
+    it('does not create dictionary in llm mode (default)', () => {
+      const data = {
+        users: [
+          { id: 1, role: 'admin' },
+          { id: 2, role: 'admin' },
+        ],
+      };
+      const goon = encode(data); // LLM mode is default
+      expect(goon).not.toContain('$:');
+      expect(goon).toContain('admin');
+    });
+
+    it('does not create dictionary when explicitly disabled', () => {
       const data = {
         users: [
           { id: 1, role: 'admin' },
@@ -66,7 +81,7 @@ describe('GOON Encode/Decode', () => {
   });
 
   describe('tabular arrays', () => {
-    it('encodes uniform arrays in tabular format', () => {
+    it('encodes uniform arrays in tabular format with comma delimiter', () => {
       const data = {
         items: [
           { id: 1, name: 'Alpha' },
@@ -74,12 +89,12 @@ describe('GOON Encode/Decode', () => {
         ],
       };
       const goon = encode(data);
-      expect(goon).toContain('{id|name}');
-      expect(goon).toContain('1|Alpha');
-      expect(goon).toContain('2|Beta');
+      expect(goon).toContain('{id,name}');
+      expect(goon).toContain('1,Alpha');
+      expect(goon).toContain('2,Beta');
     });
 
-    it('uses column references for repeated values', () => {
+    it('uses column references in compact mode', () => {
       const data = {
         orders: [
           { date: '2024-01', customer: 'Acme' },
@@ -87,8 +102,19 @@ describe('GOON Encode/Decode', () => {
           { date: '2024-02', customer: 'Acme' },
         ],
       };
-      const goon = encode(data);
+      const goon = encode(data, { mode: 'compact' });
       expect(goon).toContain('^'); // Column reference
+    });
+
+    it('does not use column refs in llm mode (default)', () => {
+      const data = {
+        orders: [
+          { date: '2024-01', customer: 'Acme' },
+          { date: '2024-01', customer: 'Acme' },
+        ],
+      };
+      const goon = encode(data); // LLM mode is default
+      expect(goon).not.toContain('^');
     });
   });
 
@@ -210,7 +236,7 @@ describe('GOON Encode/Decode', () => {
     });
 
     it('filters dangerous keys on decode', () => {
-      const malicious = `__proto__:evil\nconstructor:bad\nnormal:good`;
+      const malicious = `__proto__: evil\nconstructor: bad\nnormal: good`;
       const decoded = decode(malicious) as Record<string, unknown>;
       expect(decoded).not.toHaveProperty('__proto__');
       expect(decoded).not.toHaveProperty('constructor');
@@ -220,7 +246,7 @@ describe('GOON Encode/Decode', () => {
     it('does not pollute Object prototype', () => {
       const original = Object.prototype.toString;
       const malicious = `__proto__
-  toString:hacked`;
+  toString: hacked`;
       decode(malicious);
       expect(Object.prototype.toString).toBe(original);
     });
@@ -241,9 +267,9 @@ describe('GOON Encode/Decode', () => {
       // Create deeply nested GOON using a loop
       const lines: string[] = [];
       for (let i = 0; i < MAX_RECURSION_DEPTH + 50; i++) {
-        lines.push('  '.repeat(i) + 'nested');
+        lines.push('  '.repeat(i) + 'nested:');
       }
-      lines.push('  '.repeat(MAX_RECURSION_DEPTH + 50) + 'value:1');
+      lines.push('  '.repeat(MAX_RECURSION_DEPTH + 50) + 'value: 1');
       const goon = lines.join('\n');
       expect(() => decode(goon)).toThrow(GoonDecodeError);
     });
@@ -264,9 +290,9 @@ describe('GOON Encode/Decode', () => {
 
     it('throws GoonDecodeError with line numbers', () => {
       // Create deeply nested structure that exceeds limit
-      let goon = 'value:1';
+      let goon = 'value: 1';
       for (let i = 0; i < MAX_RECURSION_DEPTH + 10; i++) {
-        goon = `nested\n  ${goon.split('\n').join('\n  ')}`;
+        goon = `nested:\n  ${goon.split('\n').join('\n  ')}`;
       }
       try {
         decode(goon);
@@ -286,16 +312,49 @@ describe('GOON Encode/Decode', () => {
       });
       expect(goon).not.toContain('password');
       expect(goon).not.toContain('secret');
-      expect(goon).toContain('name:Alice');
+      expect(goon).toContain('name: Alice');
     });
 
     it('supports reviver function', () => {
-      const goon = `count:5`;
+      const goon = `count: 5`;
       const decoded = decode(goon, {
         reviver: (key, value) =>
           key === 'count' && typeof value === 'number' ? value * 2 : value,
       });
       expect(decoded).toEqual({ count: 10 });
+    });
+  });
+
+  describe('mode presets', () => {
+    it('llm mode disables dictionary and column refs', () => {
+      const data = {
+        users: [
+          { id: 1, dept: 'Engineering' },
+          { id: 2, dept: 'Engineering' },
+        ],
+      };
+      const goon = encode(data, { mode: 'llm' });
+      expect(goon).not.toContain('$:');
+      expect(goon).not.toContain('^');
+      expect(goon).toContain('Engineering');
+    });
+
+    it('compact mode enables all compression features', () => {
+      const data = {
+        users: [
+          { id: 1, dept: 'Engineering' },
+          { id: 2, dept: 'Engineering' },
+        ],
+      };
+      const goon = encode(data, { mode: 'compact' });
+      expect(goon).toContain('^'); // column refs enabled
+    });
+
+    it('default mode is llm', () => {
+      const data = { users: [{ id: 1, role: 'admin' }, { id: 2, role: 'admin' }] };
+      const explicit = encode(data, { mode: 'llm' });
+      const implicit = encode(data);
+      expect(explicit).toEqual(implicit);
     });
   });
 });

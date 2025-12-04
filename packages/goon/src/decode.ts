@@ -215,8 +215,8 @@ function parseRoot(ctx: ParseContext): GoonValue {
     return [];
   }
 
-  // Standalone tabular array: {fields}
-  const standaloneTabular = firstLine.match(/^\{([^}]+)\}$/);
+  // Standalone tabular array: {fields} or [N]{fields} or [N]{fields}:
+  const standaloneTabular = firstLine.match(/^(?:\[\d*\])?\{([^}]+)\}:?$/);
   if (standaloneTabular) {
     return parseTabularArray(ctx, -1, standaloneTabular[1]);
   }
@@ -276,12 +276,12 @@ function parseObject(ctx: ParseContext, baseIndent: number): GoonValue {
         continue;
       }
 
-      // Key with inline value (key:value)
-      const keyValueMatch = trimmed.match(/^([\w.]+):(.+)$/);
+      // Key with inline value (key: value or key:value)
+      const keyValueMatch = trimmed.match(/^([\w.]+):\s*(.+)$/);
       if (keyValueMatch) {
         const key = keyValueMatch[1];
         if (isSafeKey(key)) {
-          const valueStr = keyValueMatch[2];
+          const valueStr = keyValueMatch[2].trim();
           obj[key] = parsePrimitive(valueStr, ctx.dictionary);
         }
         ctx.index++;
@@ -310,8 +310,8 @@ function parseObject(ctx: ParseContext, baseIndent: number): GoonValue {
         continue;
       }
 
-      // Tabular array (key{fields})
-      const tabularMatch = trimmed.match(/^([\w.]+)\{([^}]+)\}$/);
+      // Tabular array (key{fields} or key[N]{fields} or key[N]{fields}:)
+      const tabularMatch = trimmed.match(/^([\w.]+)(?:\[\d*\])?\{([^}]+)\}:?$/);
       if (tabularMatch) {
         const key = tabularMatch[1];
         if (isSafeKey(key)) {
@@ -347,8 +347,8 @@ function parseObject(ctx: ParseContext, baseIndent: number): GoonValue {
         continue;
       }
 
-      // Nested object key (just "key" with nested content below)
-      const nestedKeyMatch = trimmed.match(/^([\w.]+)$/);
+      // Nested object key with trailing colon (key:) or without (key)
+      const nestedKeyMatch = trimmed.match(/^([\w.]+):?$/);
       if (nestedKeyMatch) {
         const key = nestedKeyMatch[1];
         ctx.index++;
@@ -405,13 +405,19 @@ function parseTabularArray(
       const currentIndent = getIndentLevel(line, ctx.indent);
       const trimmed = line.trim();
 
-      // Stop if we've dedented
-      if (currentIndent <= baseIndent) break;
+      // Stop if we've dedented below the header level
+      if (currentIndent < baseIndent) break;
 
       // Skip empty lines
       if (!trimmed) {
         ctx.index++;
         continue;
+      }
+
+      // Stop if this looks like a new key (not a data row)
+      // Data rows are comma/pipe/tab separated values, not key:value or key{} etc.
+      if (/^[\w.]+[:\[{]/.test(trimmed) || /^\$:/.test(trimmed)) {
+        break;
       }
 
       // Parse row with detected delimiter
@@ -516,8 +522,8 @@ function parseNestedValue(ctx: ParseContext, minIndent: number): GoonValue {
     return [];
   }
 
-  // Tabular array
-  const tabularMatch = trimmed.match(/^([\w.]+)?\{([^}]+)\}$/);
+  // Tabular array (with optional key and array length)
+  const tabularMatch = trimmed.match(/^([\w.]+)?(?:\[\d*\])?\{([^}]+)\}:?$/);
   if (tabularMatch) {
     if (tabularMatch[1]) {
       // Has key - return as object
