@@ -394,7 +394,27 @@ function parseTabularArray(
   try {
     // Detect delimiter from header
     const delimiter = detectDelimiter(fieldsStr);
-    const fields = fieldsStr.split(delimiter).filter(isSafeKey);
+    
+    // Parse fields and extract defaults (e.g., "role=user" -> field "role" with default "user")
+    const fieldParts = fieldsStr.split(delimiter);
+    const fields: string[] = [];
+    const fieldDefaults: Map<string, GoonValue> = new Map();
+    
+    for (const part of fieldParts) {
+      const defaultMatch = part.match(/^([\w.]+)=(.+)$/);
+      if (defaultMatch) {
+        const fieldName = defaultMatch[1];
+        const defaultStr = defaultMatch[2];
+        if (isSafeKey(fieldName)) {
+          fields.push(fieldName);
+          // Parse the default value
+          fieldDefaults.set(fieldName, parsePrimitive(defaultStr, ctx.dictionary));
+        }
+      } else if (isSafeKey(part)) {
+        fields.push(part);
+      }
+    }
+    
     const rows: GoonValue[] = [];
     let prevRowValues: GoonValue[] = [];
 
@@ -414,22 +434,43 @@ function parseTabularArray(
         continue;
       }
 
+      // Skip footer summary lines (---[n=42,sum=3450])
+      if (trimmed.startsWith('---[')) {
+        ctx.index++;
+        continue;
+      }
+
       // Stop if this looks like a new key (not a data row)
       // Data rows are comma/pipe/tab separated values, not key:value or key{} etc.
       if (/^[\w.]+[:\[{]/.test(trimmed) || /^\$:/.test(trimmed)) {
         break;
       }
 
-      // Parse row with detected delimiter
-      const cells = parseRow(trimmed, ctx.dictionary, delimiter);
+      // Strip row number prefix if present (e.g., "1. " or "42. ")
+      let rowContent = trimmed;
+      const rowNumMatch = trimmed.match(/^\d+\.\s+(.*)$/);
+      if (rowNumMatch) {
+        rowContent = rowNumMatch[1];
+      }
 
-      // Handle column references (^)
+      // Parse row with detected delimiter
+      const cells = parseRow(rowContent, ctx.dictionary, delimiter);
+
+      // Handle column references (^) and defaults
       const rowValues: GoonValue[] = [];
       for (let i = 0; i < fields.length; i++) {
-        if (cells[i] === '^' && prevRowValues[i] !== undefined) {
+        const cell = cells[i];
+        const fieldName = fields[i];
+        
+        if (cell === '^' && prevRowValues[i] !== undefined) {
+          // Column reference - use previous row value
           rowValues.push(prevRowValues[i]);
+        } else if (cell === '' || cell === undefined || cell === null) {
+          // Empty cell - check for default value
+          const defaultVal = fieldDefaults.get(fieldName);
+          rowValues.push(defaultVal !== undefined ? defaultVal : null);
         } else {
-          rowValues.push(cells[i] ?? null);
+          rowValues.push(cell);
         }
       }
 

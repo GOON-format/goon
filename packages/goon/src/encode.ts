@@ -33,6 +33,9 @@ const BASE_DEFAULTS: Required<Omit<EncodeOptions, 'replacer' | 'mode'>> = {
   arrayLengths: true,
   tabularArrays: true,
   minimalIndent: false,
+  schemaDefaults: false,
+  footerSummaries: false,
+  rowNumbers: false,
 };
 
 /**
@@ -44,7 +47,10 @@ const MODE_PRESETS: Record<EncodeMode, Partial<typeof BASE_DEFAULTS>> = {
   llm: {
     dictionary: false,
     columnRefs: false,
-    minimalIndent: true,  // 12% token savings without accuracy loss
+    minimalIndent: true,
+    schemaDefaults: false,
+    footerSummaries: false,
+    rowNumbers: false,  // Enable for +2.5% accuracy at cost of +2% tokens
   },
   
   // Compact mode: Maximum token efficiency
@@ -399,9 +405,46 @@ function encodeTabularArray(
     sortedArr = autoSortForColumnRefs(arr, fields);
   }
 
-  // Build header with optional array length (trailing colon indicates content follows)
+  // Calculate schema defaults if enabled
+  // Find the most common value for each field (if it appears in >50% of rows)
+  const fieldDefaults: Map<string, GoonValue> = new Map();
+  if (opts.schemaDefaults) {
+    for (const field of fields) {
+      const valueCounts = new Map<string, { value: GoonValue; count: number }>();
+      for (const obj of arr) {
+        const val = obj[field];
+        const key = JSON.stringify(val);
+        const existing = valueCounts.get(key);
+        if (existing) {
+          existing.count++;
+        } else {
+          valueCounts.set(key, { value: val, count: 1 });
+        }
+      }
+      // Find most common value
+      let mostCommon: { value: GoonValue; count: number } | null = null;
+      for (const entry of valueCounts.values()) {
+        if (!mostCommon || entry.count > mostCommon.count) {
+          mostCommon = entry;
+        }
+      }
+      // Only use as default if appears in >50% of rows and saves tokens
+      if (mostCommon && mostCommon.count > arr.length * 0.5 && mostCommon.count > 1) {
+        fieldDefaults.set(field, mostCommon.value);
+      }
+    }
+  }
+
+  // Build header with optional array length and schema defaults
   const lengthPrefix = opts.arrayLengths ? `[${arr.length}]` : '';
-  const header = `${lengthPrefix}{${fields.join(opts.delimiter)}}:`;
+  const fieldParts = fields.map(f => {
+    const defaultVal = fieldDefaults.get(f);
+    if (defaultVal !== undefined && isPrimitive(defaultVal)) {
+      return `${f}=${encodePrimitive(defaultVal as string | number | boolean | null, dictionary, false)}`;
+    }
+    return f;
+  });
+  const header = `${lengthPrefix}{${fieldParts.join(opts.delimiter)}}:`;
   if (parentKey !== null) {
     lines.push(`${indent}${parentKey}${header}`);
   } else {
@@ -410,13 +453,27 @@ function encodeTabularArray(
 
   // Track previous row for column references
   let prevRow: (string | number | boolean | null)[] | null = null;
+  
+  // Track numeric sums for footer
+  const numericSums: Map<string, { sum: number; count: number }> = new Map();
 
-  for (const obj of sortedArr) {
+  for (let rowIdx = 0; rowIdx < sortedArr.length; rowIdx++) {
+    const obj = sortedArr[rowIdx];
     const row = fields.map((f) => obj[f] as string | number | boolean | null);
     const cells: string[] = [];
 
     for (let i = 0; i < row.length; i++) {
       const value = row[i];
+      const field = fields[i];
+      const defaultVal = fieldDefaults.get(field);
+
+      // Track numeric values for footer summaries
+      if (opts.footerSummaries && typeof value === 'number' && isFinite(value)) {
+        const existing = numericSums.get(field) || { sum: 0, count: 0 };
+        existing.sum += value;
+        existing.count++;
+        numericSums.set(field, existing);
+      }
 
       // Check for column reference (only if enabled at this depth)
       if (
@@ -426,6 +483,9 @@ function encodeTabularArray(
         value !== null
       ) {
         cells.push('^');
+      } else if (opts.schemaDefaults && defaultVal !== undefined && value === defaultVal) {
+        // Use empty string for default value (omit it)
+        cells.push('');
       } else {
         cells.push(encodePrimitive(value, dictionary, useDictionary));
       }
@@ -433,8 +493,25 @@ function encodeTabularArray(
 
     // minimalIndent: rows at column 0 for max token efficiency
     const rowIndent = opts.minimalIndent ? '' : opts.indent.repeat(depth + 1);
-    lines.push(`${rowIndent}${cells.join(opts.delimiter)}`);
+    // Add row number prefix if enabled
+    const rowPrefix = opts.rowNumbers ? `${rowIdx + 1}. ` : '';
+    lines.push(`${rowIndent}${rowPrefix}${cells.join(opts.delimiter)}`);
     prevRow = row;
+  }
+
+  // Add footer summary if enabled and we have numeric fields
+  if (opts.footerSummaries && numericSums.size > 0) {
+    const summaryParts: string[] = [`n=${arr.length}`];
+    for (const [field, stats] of numericSums) {
+      if (stats.count === arr.length) {
+        // All rows have this numeric field
+        const avg = Math.round((stats.sum / stats.count) * 100) / 100;
+        summaryParts.push(`${field}:sum=${stats.sum}`);
+        summaryParts.push(`${field}:avg=${avg}`);
+      }
+    }
+    const rowIndent = opts.minimalIndent ? '' : opts.indent.repeat(depth);
+    lines.push(`${rowIndent}---[${summaryParts.join(',')}]`);
   }
 }
 

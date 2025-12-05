@@ -1,6 +1,6 @@
 {
   "name": "@goon-format/goon",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Greatly Optimized Object Notation - Hyper-compact LLM-friendly data format",
   "type": "module",
   "main": "./dist/index.js",

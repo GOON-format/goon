@@ -1,15 +1,15 @@
 # Token Efficiency Benchmark Results
 
-**Generated**: 2025-12-04T12:47:33.627Z
+**Generated**: 2025-12-05T00:31:45.194Z
 **Tokenizer**: gpt-4o (o200k_base)
 
 ## Summary
 
 ### Overall Results
 
-- **GOON vs JSON**: 37.9% savings
-- **GOON vs TOON**: 3.1% savings
-- **GOON beats TOON on all datasets**: ✅ Yes
+- **GOON vs JSON**: 36.1% savings
+- **GOON vs TOON**: -1.2% savings
+- **GOON beats TOON on all datasets**: ❌ No
 
 ### By Format
 
@@ -21,7 +21,7 @@
 | XML | 8,295 | 26,135 | -17.5% | -105.4% |
 | CSV | 2,192 | 6,395 | **64.9%** | **8.6%** |
 | TOON | 4,822 | 14,075 | **36.5%** | **0.0%** |
-| **GOON** | 4,729 | 13,693 | **37.9%** | **3.1%** |
+| **GOON** | 4,839 | 13,842 | **36.1%** | -1.2% |
 
 ### By Dataset
 
@@ -29,7 +29,7 @@
 |---------|-------------|-------------|--------------|--------------|
 | employees | CSV | 2,192 | XML | 7,418 |
 | orders | JSON Compact | 5,854 | XML | 11,320 |
-| analytics | GOON | 1,686 | XML | 5,524 |
+| analytics | TOON | 1,806 | XML | 5,524 |
 | github | JSON Compact | 10,444 | XML | 16,840 |
 | events | JSON Compact | 4,615 | XML | 7,740 |
 | config | JSON Compact | 478 | XML | 930 |
@@ -41,8 +41,8 @@
 | Format | Tokens | Bytes | vs JSON | vs TOON |
 |--------|--------|-------|---------|---------|
 | CSV | 2,192 | 6,395 | 64.9% | 8.6% |
-| **GOON** | 2,197 | 6,087 | 64.8% | 8.3% |
 | TOON | 2,397 | 6,612 | 61.6% | 0.0% |
+| **GOON** | 2,497 | 6,479 | 60.0% | -4.2% |
 | JSON Compact | 3,835 | 14,056 | 38.5% | -60.0% |
 | YAML | 4,870 | 15,352 | 21.9% | -103.2% |
 | JSON | 6,239 | 20,664 | 0.0% | -160.3% |
@@ -53,8 +53,8 @@
 | Format | Tokens | Bytes | vs JSON | vs TOON |
 |--------|--------|-------|---------|---------|
 | JSON Compact | 5,854 | 19,653 | 41.2% | 8.7% |
-| **GOON** | 6,325 | 19,522 | 36.4% | 1.4% |
 | TOON | 6,415 | 20,062 | 35.5% | 0.0% |
+| **GOON** | 6,505 | 19,792 | 34.6% | -1.4% |
 | YAML | 7,193 | 23,579 | 27.7% | -12.1% |
 | JSON | 9,948 | 34,701 | 0.0% | -55.1% |
 | XML | 11,320 | 35,795 | -13.8% | -76.5% |
@@ -63,8 +63,8 @@
 
 | Format | Tokens | Bytes | vs JSON | vs TOON |
 |--------|--------|-------|---------|---------|
-| **GOON** | 1,686 | 2,848 | 62.0% | 6.6% |
 | TOON | 1,806 | 2,968 | 59.3% | 0.0% |
+| **GOON** | 1,866 | 3,079 | 57.9% | -3.3% |
 | JSON Compact | 2,928 | 8,648 | 33.9% | -62.1% |
 | YAML | 3,705 | 9,784 | 16.4% | -105.1% |
 | JSON | 4,432 | 12,616 | 0.0% | -145.4% |

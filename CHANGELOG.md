@@ -5,6 +5,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.4] - 2024-12-05
+
+### Added
+
+- **Experimental accuracy features** (research-based):
+  - `rowNumbers`: Add `1. 2. 3.` prefixes for easier counting (+2-3% accuracy, -2-4% tokens)
+  - `schemaDefaults`: Schema-level defaults `{role=user}` (+3-5% tokens, mixed accuracy)
+  - `footerSummaries`: Pre-computed aggregates `---[n=42,sum=3450]` (high token cost)
+- **CLI `--mode` flag**: Choose `llm`, `compact`, or `balanced`
+- **Detailed trade-off documentation** for all encoding options
+
+### Changed
+
+- **CLI now defaults to LLM mode** (was implicitly compact)
+- All options now have efficiency/accuracy trade-off comments in types.ts
+
+### Fixed
+
+- CLI and library now have consistent defaults (both LLM mode)
+
 ## [1.0.3] - 2024-12-04
 
 ### Changed

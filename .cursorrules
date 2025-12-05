@@ -1,0 +1,56 @@
+# GOON Format Support
+
+This project uses GOON (Greatly Optimized Object Notation) - a token-efficient data format.
+
+## GOON Format Quick Reference
+
+When you see data in GOON format, understand these patterns:
+
+### Tabular Arrays
+```
+users[3]{id,name,role}:
+1,Alice,admin
+2,Bob,user
+3,Carol,user
+```
+Means: Array of 3 objects with fields id, name, role
+
+### Literals
+- `T` = true
+- `F` = false
+- `_` = null
+- `~` = "" (empty string)
+
+### Dictionary (compact mode only)
+```
+$:$0=Engineering
+users[2]{id,dept}:
+1,$0
+2,$0
+```
+`$0` references "Engineering" from the dictionary
+
+### Column References (compact mode only)
+```
+orders[3]{date,customer}:
+2024-01,Acme
+^,^
+2024-02,^
+```
+`^` means "same as the cell above"
+
+## When User Pastes GOON Data
+
+Parse it mentally using the rules above. The format saves ~38% tokens vs JSON while maintaining readability.
+
+## Converting Data
+
+To convert JSON to GOON: `echo '{"key":"value"}' | goon`
+To convert GOON to JSON: `echo 'key:value' | goon -d`
+
+## CLI Modes
+
+- `goon data.json` - LLM mode (default): Best accuracy, no confusing $refs or ^
+- `goon data.json --mode compact` - Max compression with all features
+- `goon data.json --mode balanced` - Trade-off between readability and compression
+

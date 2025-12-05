@@ -33,6 +33,9 @@ Options:
   -o, --output       Output file (or directory with --batch)
   -e, --encode       Force encode mode (JSON → GOON)
   -d, --decode       Force decode mode (GOON → JSON)
+  -m, --mode         Encoding mode: llm (default), compact, balanced
+  --dict             Enable string dictionary (for llm mode override)
+  --refs             Enable column references (for llm mode override)
   --no-dict          Disable string dictionary
   --no-refs          Disable column references
   --stats            Show token statistics
@@ -41,9 +44,17 @@ Options:
   --batch            Process multiple files (output must be directory)
   -h, --help         Show this help
 
+Modes:
+  llm (default)      Best for AI/LLM prompts - no $refs or ^, 92.5% accuracy
+  compact            Max compression - enables dictionary, refs, auto-sort
+  balanced           Trade-off between readability and compression
+
 Examples:
-  # Convert JSON to GOON
+  # Convert JSON to GOON (LLM-friendly, default)
   goon data.json -o data.goon
+
+  # Maximum compression
+  goon data.json --mode compact
 
   # Convert GOON to JSON
   goon data.goon -o data.json
@@ -57,22 +68,19 @@ Examples:
   # Compare formats
   goon data.json --compare
 
-  # Validate GOON file
-  goon data.goon --validate
-
-  # Batch convert
-  goon *.json --batch -o ./goon-files/
-
 Website: https://github.com/goon-format/goon
 `;
+
+type Mode = 'llm' | 'compact' | 'balanced';
 
 interface Options {
   inputs: string[];
   output?: string;
   encode?: boolean;
   decode?: boolean;
-  dictionary: boolean;
-  columnRefs: boolean;
+  mode: Mode;
+  dictionary?: boolean;  // undefined = use mode default
+  columnRefs?: boolean;  // undefined = use mode default
   stats?: boolean;
   compare?: boolean;
   validate?: boolean;
@@ -83,8 +91,7 @@ interface Options {
 function parseArgs(args: string[]): Options {
   const opts: Options = {
     inputs: [],
-    dictionary: true,
-    columnRefs: true,
+    mode: 'llm',  // Default to LLM mode for best accuracy
   };
 
   for (let i = 0; i < args.length; i++) {
@@ -106,6 +113,16 @@ function parseArgs(args: string[]): Options {
       case '-d':
       case '--decode':
         opts.decode = true;
+        break;
+      case '-m':
+      case '--mode':
+        opts.mode = args[++i] as Mode;
+        break;
+      case '--dict':
+        opts.dictionary = true;
+        break;
+      case '--refs':
+        opts.columnRefs = true;
         break;
       case '--no-dict':
         opts.dictionary = false;
@@ -325,8 +342,10 @@ function processFile(
   if (mode === 'encode') {
     const data = JSON.parse(input);
     output = encode(data, {
-      dictionary: opts.dictionary,
-      columnRefs: opts.columnRefs,
+      mode: opts.mode,
+      // Only override if explicitly set
+      ...(opts.dictionary !== undefined && { dictionary: opts.dictionary }),
+      ...(opts.columnRefs !== undefined && { columnRefs: opts.columnRefs }),
     });
     newExt = '.goon';
   } else {
@@ -472,8 +491,10 @@ async function main(): Promise<void> {
   if (mode === 'encode') {
     const data = JSON.parse(input);
     output = encode(data, {
-      dictionary: opts.dictionary,
-      columnRefs: opts.columnRefs,
+      mode: opts.mode,
+      // Only override if explicitly set
+      ...(opts.dictionary !== undefined && { dictionary: opts.dictionary }),
+      ...(opts.columnRefs !== undefined && { columnRefs: opts.columnRefs }),
     });
     jsonSize = input.length;
     goonSize = output.length;
