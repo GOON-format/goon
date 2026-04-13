@@ -253,6 +253,40 @@ export interface EncodeOptions {
    * @default false
    */
   rowNumbers?: boolean;
+
+  /**
+   * Use v2 syntax for additional token savings.
+   * Changes:
+   * - `:N` instead of `[N]` for array length (saves 1 token)
+   * - `[]` instead of `{}` for field list (differentiates from TOON)
+   * - No trailing `:` on headers
+   * 
+   * Example: `users:3[id,name,role]` instead of `users[3]{id,name,role}:`
+   * 
+   * **Trade-off:**
+   * - ✅ EFFICIENCY: ~2 tokens saved per header
+   * - ❌ ACCURACY: -2.4% ([] may confuse LLMs)
+   * 
+   * @default false
+   */
+  v2Syntax?: boolean;
+
+  /**
+   * Use v3 syntax with parentheses for field lists.
+   * Changes:
+   * - `:N` instead of `[N]` for array length (saves 1 token)
+   * - `()` instead of `{}` for field list
+   * - No trailing `:` on headers
+   * 
+   * Example: `users:3(id,name,role)` instead of `users[3]{id,name,role}:`
+   * 
+   * **Trade-off:**
+   * - ✅ EFFICIENCY: ~2 tokens saved per header (same as v2)
+   * - ⚠️ ACCURACY: Testing needed
+   * 
+   * @default false
+   */
+  v3Syntax?: boolean;
 }
 
 /**

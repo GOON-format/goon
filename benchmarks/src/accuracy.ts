@@ -124,7 +124,7 @@ Do NOT explain or show steps.`;
 
 // Select appropriate system prompt based on format
 function getSystemPrompt(formatName: string): string {
-  if (formatName === 'GOON') return SYSTEM_PROMPT_GOON;
+  if (formatName === 'GOON' || formatName === 'GOON v2') return SYSTEM_PROMPT_GOON;
   if (formatName === 'TOON') return SYSTEM_PROMPT_TOON;
   return SYSTEM_PROMPT_JSON;
 }
@@ -161,7 +161,7 @@ export async function runAccuracyBenchmark(
   const allFormats = getFormats();
   const formats = options.formats
     ? allFormats.filter(f => options.formats!.includes(f.name))
-    : allFormats.filter(f => ['JSON', 'TOON', 'GOON'].includes(f.name));
+    : allFormats.filter(f => ['JSON', 'TOON', 'GOON', 'GOON v2', 'GOON v3'].includes(f.name));
 
   const results: AccuracyResult[] = [];
 

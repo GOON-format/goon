@@ -24,6 +24,44 @@ export const goonFormat: FormatConverter = {
 };
 
 /**
+ * GOON v2 syntax for additional token savings
+ * - :N instead of [N] for array length
+ * - [] instead of {} for fields
+ * - No trailing : on headers
+ */
+export const goonV2Format: FormatConverter = {
+  name: 'GOON v2',
+  extension: '.goon',
+  encode: (data: unknown): string => encode(data as any, { 
+    dictionary: false,
+    columnRefs: false,
+    minimalIndent: true,
+    v2Syntax: true,
+  }),
+  decode: (text: string): unknown => decode(text),
+  supportsNested: true,
+};
+
+/**
+ * GOON v3 syntax with parentheses
+ * - :N instead of [N] for array length
+ * - () instead of {} for fields
+ * - No trailing : on headers
+ */
+export const goonV3Format: FormatConverter = {
+  name: 'GOON v3',
+  extension: '.goon',
+  encode: (data: unknown): string => encode(data as any, { 
+    dictionary: false,
+    columnRefs: false,
+    minimalIndent: true,
+    v3Syntax: true,
+  }),
+  decode: (text: string): unknown => decode(text),
+  supportsNested: true,
+};
+
+/**
  * GOON format with specific features disabled for analysis
  */
 export const goonNoDictFormat: FormatConverter = {

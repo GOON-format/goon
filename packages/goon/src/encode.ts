@@ -36,6 +36,8 @@ const BASE_DEFAULTS: Required<Omit<EncodeOptions, 'replacer' | 'mode'>> = {
   schemaDefaults: false,
   footerSummaries: false,
   rowNumbers: false,
+  v2Syntax: false,
+  v3Syntax: false,
 };
 
 /**
@@ -436,7 +438,6 @@ function encodeTabularArray(
   }
 
   // Build header with optional array length and schema defaults
-  const lengthPrefix = opts.arrayLengths ? `[${arr.length}]` : '';
   const fieldParts = fields.map(f => {
     const defaultVal = fieldDefaults.get(f);
     if (defaultVal !== undefined && isPrimitive(defaultVal)) {
@@ -444,7 +445,23 @@ function encodeTabularArray(
     }
     return f;
   });
-  const header = `${lengthPrefix}{${fieldParts.join(opts.delimiter)}}:`;
+  
+  // Header syntax variants:
+  // v1: users[3]{id,name}: (default)
+  // v2: users:3[id,name]
+  // v3: users:3(id,name)
+  let header: string;
+  if (opts.v3Syntax) {
+    const lengthPart = opts.arrayLengths ? `:${arr.length}` : '';
+    header = `${lengthPart}(${fieldParts.join(opts.delimiter)})`;
+  } else if (opts.v2Syntax) {
+    const lengthPart = opts.arrayLengths ? `:${arr.length}` : '';
+    header = `${lengthPart}[${fieldParts.join(opts.delimiter)}]`;
+  } else {
+    const lengthPrefix = opts.arrayLengths ? `[${arr.length}]` : '';
+    header = `${lengthPrefix}{${fieldParts.join(opts.delimiter)}}:`;
+  }
+  
   if (parentKey !== null) {
     lines.push(`${indent}${parentKey}${header}`);
   } else {

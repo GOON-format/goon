@@ -215,10 +215,22 @@ function parseRoot(ctx: ParseContext): GoonValue {
     return [];
   }
 
-  // Standalone tabular array: {fields} or [N]{fields} or [N]{fields}:
+  // Standalone tabular array: {fields} or [N]{fields} or [N]{fields}: or :N[fields] (v2)
   const standaloneTabular = firstLine.match(/^(?:\[\d*\])?\{([^}]+)\}:?$/);
   if (standaloneTabular) {
     return parseTabularArray(ctx, -1, standaloneTabular[1]);
+  }
+  
+  // v2 syntax: :N[fields] or [fields]
+  const standaloneTabularV2 = firstLine.match(/^(?::\d+)?\[([^\]]+)\]$/);
+  if (standaloneTabularV2) {
+    return parseTabularArray(ctx, -1, standaloneTabularV2[1]);
+  }
+  
+  // v3 syntax: :N(fields) or (fields)
+  const standaloneTabularV3 = firstLine.match(/^(?::\d+)?\(([^)]+)\)$/);
+  if (standaloneTabularV3) {
+    return parseTabularArray(ctx, -1, standaloneTabularV3[1]);
   }
 
   // Standalone simple array: []:values
@@ -276,6 +288,42 @@ function parseObject(ctx: ParseContext, baseIndent: number): GoonValue {
         continue;
       }
 
+      // Tabular array (key{fields} or key[N]{fields} or key[N]{fields}:)
+      const tabularMatch = trimmed.match(/^([\w.]+)(?:\[\d*\])?\{([^}]+)\}:?$/);
+      if (tabularMatch) {
+        const key = tabularMatch[1];
+        if (isSafeKey(key)) {
+          obj[key] = parseTabularArray(ctx, currentIndent, tabularMatch[2]);
+        } else {
+          ctx.index++;
+        }
+        continue;
+      }
+      
+      // v2 syntax: key:N[fields] or key[fields] - must check BEFORE key:value
+      const tabularMatchV2 = trimmed.match(/^([\w.]+)(?::\d+)?\[([^\]]+)\]$/);
+      if (tabularMatchV2) {
+        const key = tabularMatchV2[1];
+        if (isSafeKey(key)) {
+          obj[key] = parseTabularArray(ctx, currentIndent, tabularMatchV2[2]);
+        } else {
+          ctx.index++;
+        }
+        continue;
+      }
+      
+      // v3 syntax: key:N(fields) or key(fields) - must check BEFORE key:value
+      const tabularMatchV3 = trimmed.match(/^([\w.]+)(?::\d+)?\(([^)]+)\)$/);
+      if (tabularMatchV3) {
+        const key = tabularMatchV3[1];
+        if (isSafeKey(key)) {
+          obj[key] = parseTabularArray(ctx, currentIndent, tabularMatchV3[2]);
+        } else {
+          ctx.index++;
+        }
+        continue;
+      }
+
       // Key with inline value (key: value or key:value)
       const keyValueMatch = trimmed.match(/^([\w.]+):\s*(.+)$/);
       if (keyValueMatch) {
@@ -307,18 +355,6 @@ function parseObject(ctx: ParseContext, baseIndent: number): GoonValue {
           obj[key] = [];
         }
         ctx.index++;
-        continue;
-      }
-
-      // Tabular array (key{fields} or key[N]{fields} or key[N]{fields}:)
-      const tabularMatch = trimmed.match(/^([\w.]+)(?:\[\d*\])?\{([^}]+)\}:?$/);
-      if (tabularMatch) {
-        const key = tabularMatch[1];
-        if (isSafeKey(key)) {
-          obj[key] = parseTabularArray(ctx, currentIndent, tabularMatch[2]);
-        } else {
-          ctx.index++;
-        }
         continue;
       }
 

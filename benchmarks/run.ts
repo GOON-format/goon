@@ -295,3 +295,4 @@ console.log(`   GOON: ${totalGoon} bytes (${((1 - totalGoon / totalJson) * 100).
 console.log(`   GOON beats TOON by: ${((1 - totalGoon / totalToon) * 100).toFixed(1)}%`);
 console.log(`════════════════════════════════════════════════════════════════════════════════`);
 
+
